@@ -7,10 +7,13 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "build:ui": "rm -rf dist && cd ../part2-notes-frontend/dist  && npm run build && cp -r dist ../backend",
+  "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
   "author": "stbs",
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.19.2",
     "morgan": "^1.10.0"
   },

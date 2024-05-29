@@ -1,8 +1,10 @@
 const express = require("express");
 var morgan = require("morgan");
+const cors = require("cors");
 const app = express();
 app.use(express.json());
-
+app.use(express.static("dist"));
+app.use(cors());
 morgan.token("body", function (req, res) {
   return JSON.stringify(req.body);
 });
@@ -64,7 +66,8 @@ app.post("/api/persons", (req, res) => {
     return res.status(405).end("please fill right");
   }
 
-  const filter = phoneBook.filter((n) => n.name !== body.name);
+  const filter = phoneBook.filter((n) => n.name === body.name);
+  console.log(filter);
   if (filter.length > 0) {
     return res.status(409).send({ error: "name must be unique" });
   }
@@ -78,7 +81,7 @@ app.post("/api/persons", (req, res) => {
   res.json(person);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
