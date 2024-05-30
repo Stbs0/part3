@@ -27,10 +27,12 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
-app.get("/api/persons", (req, res,next) => {
-  Contact.find({}).then((result) => {
-    res.json(result);
-  }).catch(error=>next(error));
+app.get("/api/persons", (req, res, next) => {
+  Contact.find({})
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((error) => next(error));
 });
 
 app.get("/info", (req, res, next) => {
@@ -68,34 +70,32 @@ app.delete("/api/persons/:id", (req, res, next) => {
     .catch((error) => next(error));
 });
 app.put("/api/persons/:id", (req, res, next) => {
-  const body = req.body;
-  const contact = {
-    name: body.name,
-    number: body.number,
-  };
-  console.log(req.params.id);
-  Contact.findByIdAndUpdate(req.params.id, contact, { new: true })
+  const { name, number } = req.body;
+
+  Contact.findByIdAndUpdate(
+    req.params.id,
+    { name, number },
+    { new: true, runValidator: true, context: "query" }
+  )
     .then((updated) => {
-      console.log(updated);
       res.json(updated);
     })
     .catch((error) => next(error));
 });
-app.post("/api/persons", (req, res,next) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body;
-  if (body === undefined) {
-    return res.status(405).end("please fill right");
-  }
 
-  console.log(body);
   const person = new Contact({
     name: body.name,
     number: body.number,
   });
-  console.log(person);
-  person.save().then((result) => {
-    res.json(result);
-  }).catch(error=>next(error));
+
+  person
+    .save()
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((error) => next(error));
 });
 app.use(unknownEndpoint);
 
@@ -103,6 +103,8 @@ app.use((error, req, res, next) => {
   if (error.name === "CastError") {
     console.log(error.message);
     return res.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return res.status(400).json({ error: error.message });
   }
 
   next(error);
